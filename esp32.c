@@ -201,7 +201,120 @@ void loop()
     }
 }
 
+//nfc + display
+/*Module pin	ESP32
+PN532 VCC	3V3
+PN532 GND	GND
+PN532 SDA	GPIO 21
+PN532 SCL	GPIO 22
+PN532 IRQ	GPIO 4
+PN532 RSTO	Not connected
+OLED VCC	3V3
+OLED GND	GND
+OLED SDA	GPIO 21
+OLED SCL	GPIO 22*/
 
+
+#include <Wire.h>
+#include <Adafruit_PN532.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SH110X.h>
+
+#define PN532_IRQ 4
+
+// -1 means no hardware reset pin
+Adafruit_PN532 nfc(PN532_IRQ, -1, &Wire);
+
+Adafruit_SH1106G display(128, 64, &Wire, -1);
+
+void setup()
+{
+    Serial.begin(115200);
+
+    Wire.begin(21, 22);
+
+    display.begin(0x3C, true);
+    display.clearDisplay();
+    display.setTextColor(SH110X_WHITE);
+    display.setTextSize(1);
+    display.setCursor(0, 10);
+    display.println("NFC SYSTEM");
+    display.println("Initializing...");
+    display.display();
+
+    nfc.begin();
+
+    uint32_t version = nfc.getFirmwareVersion();
+
+    if (!version)
+    {
+        Serial.println("PN532 NOT FOUND");
+
+        display.clearDisplay();
+        display.setCursor(0, 10);
+        display.println("PN532 NOT FOUND");
+        display.display();
+
+        while (1);
+    }
+
+    nfc.SAMConfig();
+
+    Serial.println("NFC READY");
+
+    display.clearDisplay();
+    display.setCursor(0, 10);
+    display.println("READY");
+    display.println("TAP YOUR CARD");
+    display.display();
+}
+
+void loop()
+{
+    uint8_t uid[7];
+    uint8_t uidLength;
+
+    bool success = nfc.readPassiveTargetID(
+        PN532_MIFARE_ISO14443A,
+        uid,
+        &uidLength,
+        100
+    );
+
+    if (success)
+    {
+        display.clearDisplay();
+        display.setCursor(0, 0);
+
+        display.println("CARD DETECTED");
+        display.println("CARD UID:");
+
+        Serial.print("Card UID: ");
+
+        for (int i = 0; i < uidLength; i++)
+        {
+            if (uid[i] < 0x10)
+                Serial.print("0");
+
+            Serial.print(uid[i], HEX);
+
+            display.print(uid[i] < 0x10 ? "0" : "");
+            display.print(uid[i], HEX);
+            display.print(" ");
+        }
+
+        Serial.println();
+        display.display();
+
+        delay(1500);
+
+        display.clearDisplay();
+        display.setCursor(0, 10);
+        display.println("READY");
+        display.println("TAP NEXT CARD");
+        display.display();
+    }
+}
 
 
 
