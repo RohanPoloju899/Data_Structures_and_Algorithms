@@ -74,3 +74,65 @@ void loop()
     Serial.println("ESP32 is working!");
     delay(1000);
 }
+
+
+/* esp32 display program 
+arduino-cli upload -p /dev/ttyUSB0 --fqbn esp32:esp32:esp32 .
+arduino-cli upload -p /dev/ttyUSB0 --fqbn esp32:esp32:esp32 .
+arduino-cli compile --fqbn esp32:esp32:esp32 .
+OLED pin	ESP32 pin
+GND	GND
+VCC	3V3
+SCL	GPIO 22
+SDA	GPIO 21
+
+LED / Component	Connect to
+LED long leg (+ Anode)	GPIO 2 through 220 Ω resistor
+LED short leg (− Cathode)	GND
+*/
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SH110X.h>
+
+#define LED 2
+
+Adafruit_SH1106G display(128, 64, &Wire, -1);
+
+void setup()
+{
+    pinMode(LED, OUTPUT);
+
+    Wire.begin(21, 22);
+
+    display.begin(0x3C, true);
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(SH110X_WHITE);
+}
+
+void loop()
+{
+    digitalWrite(LED, HIGH);
+
+    display.clearDisplay();
+    display.setCursor(15, 20);
+    display.println("LED ON");
+    display.display();
+
+    delay(1000);
+
+    digitalWrite(LED, LOW);
+
+    display.clearDisplay();
+    display.setCursor(15, 20);
+    display.println("LED OFF");
+    display.display();
+
+    delay(1000);
+}
+
+
+
+
+
+
