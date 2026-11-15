@@ -62,7 +62,7 @@ arduino-cli monitor -p /dev/ttyUSB0 -c baudrate=115200
 **Communication:** SPI / I2C / UART (depending on PN532 configuration)
 */
 
-    
+//led program    
 void setup()
 {
     Serial.begin(115200);
@@ -75,7 +75,7 @@ void loop()
     delay(1000);
 }
 
-
+// led + oled program
 /* esp32 display program 
 arduino-cli upload -p /dev/ttyUSB0 --fqbn esp32:esp32:esp32 .
 arduino-cli upload -p /dev/ttyUSB0 --fqbn esp32:esp32:esp32 .
@@ -131,6 +131,73 @@ void loop()
     delay(1000);
 }
 
+//pn532 program
+
+#include <Wire.h>
+#include <Adafruit_PN532.h>
+
+#define SDA_PIN 21
+#define SCL_PIN 22
+
+Adafruit_PN532 nfc(-1, -1, &Wire);
+
+void setup()
+{
+    Serial.begin(115200);
+
+    Wire.begin(SDA_PIN, SCL_PIN);
+
+    Serial.println("Starting PN532...");
+
+    nfc.begin();
+
+    uint32_t version = nfc.getFirmwareVersion();
+
+    if (!version)
+    {
+        Serial.println("PN532 not detected!");
+        while (1);
+    }
+
+    Serial.println("PN532 detected!");
+
+    nfc.SAMConfig();
+
+    Serial.println("Ready! Tap your NFC card.");
+}
+
+void loop()
+{
+    uint8_t uid[7];
+    uint8_t uidLength;
+
+    bool success = nfc.readPassiveTargetID(
+        PN532_MIFARE_ISO14443A,
+        uid,
+        &uidLength
+    );
+
+    if (success)
+    {
+        Serial.println("\nCard detected!");
+
+        Serial.print("Card UID: ");
+
+        for (uint8_t i = 0; i < uidLength; i++)
+        {
+            if (uid[i] < 0x10)
+                Serial.print("0");
+
+            Serial.print(uid[i], HEX);
+            Serial.print(" ");
+        }
+
+        Serial.println();
+        Serial.println("--------------------");
+
+        delay(1500);
+    }
+}
 
 
 
