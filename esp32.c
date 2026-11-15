@@ -132,6 +132,8 @@ void loop()
 }
 
 //pn532 program
+//arduino-cli monitor -p /dev/ttyUSB0 -c baudrate=115200
+
 
 #include <Wire.h>
 #include <Adafruit_PN532.h>
