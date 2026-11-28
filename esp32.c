@@ -1,7 +1,6 @@
 /* esp32
-nano blink.ino
+nano esp.ino
 arduino-cli compile -u -p /dev/ttyUSB0 --fqbn esp32:esp32:esp32
-arduino-cli upload -p /dev/ttyUSB0 --fqbn esp32:esp32:esp32 .
 arduino-cli monitor -p /dev/ttyUSB0 -c baudrate=115200
 
 
